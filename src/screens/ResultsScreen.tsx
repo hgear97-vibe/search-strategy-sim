@@ -1,6 +1,6 @@
 import { useGame } from '@/game/GameContext';
 import { getHeadlines, SEARCH_TYPES, emptyStrategy, calculateScores } from '@/game/engine';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import ScoreGauge from '@/components/ScoreGauge';
 
 export default function ResultsScreen() {
@@ -31,7 +31,7 @@ export default function ResultsScreen() {
   const DeltaIcon = ({ current, previous }: { current: number; previous: number }) => {
     if (current > previous) return <TrendingUp className="w-4 h-4 text-success inline" />;
     if (current < previous) return <TrendingDown className="w-4 h-4 text-destructive inline" />;
-    return null;
+    return <Minus className="w-4 h-4 text-muted-foreground inline" />;
   };
 
   return (

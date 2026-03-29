@@ -1,6 +1,6 @@
 import { useGame } from '@/game/GameContext';
 import { SEARCH_TYPES, Strategy, SearchType, Allocation, calculateScores, emptyStrategy } from '@/game/engine';
-import { CheckCircle2, AlertTriangle, Info, TrendingUp, TrendingDown } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import CircularDial from '@/components/CircularDial';
 
 interface Props {
@@ -65,7 +65,7 @@ export default function ExperimentScreen({ isFinal }: Props) {
   const DeltaIcon = ({ current, previous }: { current: number; previous: number }) => {
     if (current > previous) return <TrendingUp className="w-4 h-4 text-success inline" />;
     if (current < previous) return <TrendingDown className="w-4 h-4 text-destructive inline" />;
-    return null;
+    return <Minus className="w-4 h-4 text-muted-foreground inline" />;
   };
 
   return (
