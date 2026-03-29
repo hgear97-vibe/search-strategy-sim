@@ -2,7 +2,8 @@ import { useGame } from '@/game/GameContext';
 import { emptyStrategy } from '@/game/engine';
 
 export default function BriefScreen() {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
+  const username = state.profile?.username || 'CEO';
 
   const stats = [
     { title: 'Google Search Ad Revenue', value: '$198B/year', sub: '77% of Alphabet total revenue' },
@@ -21,7 +22,14 @@ export default function BriefScreen() {
       <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-foreground">CEO Morning Brief</h1>
-          <p className="text-muted-foreground mt-2">Good morning, Sundar. Here's what you need to know.</p>
+          <p className="text-muted-foreground mt-2">Good morning, {username}. Here's what you need to know.</p>
+        </div>
+
+        <div className="stat-card border-primary/20 bg-primary/5 text-center max-w-3xl mx-auto">
+          <p className="text-foreground leading-relaxed">
+            You're Google's acting CEO for a day. AI competitors are threatening Search — the engine behind 77% of Alphabet's revenue.
+            The board needs you to run <span className="font-bold text-primary">3 experiments</span>, then lock in a steady-state strategy that balances user satisfaction with ad revenue. Choose wisely — the board is watching.
+          </p>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
