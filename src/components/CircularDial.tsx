@@ -1,12 +1,10 @@
 import { useState, useRef, useCallback } from 'react';
 
 const RADIUS = 38;
-const RADIUS = 38;
 const CENTER = 50;
 const KNOB_RADIUS = 8;
 
 // 3 points splitting circumference into thirds (120° apart)
-// 0 at top (-90°), 50 at bottom-right (150°), 100 at bottom-left (30° via -210°)
 const VALUE_ANGLES = [
   { value: 0, angle: -90 },
   { value: 50, angle: 30 },
@@ -23,13 +21,10 @@ function angleFromMouse(cx: number, cy: number, mx: number, my: number): number 
 }
 
 function valueFromAngle(angleDeg: number): number {
-  // Normalize angle so that -90° (top) = 0°
   let normalized = angleDeg + 90;
   if (normalized < 0) normalized += 360;
   if (normalized >= 360) normalized -= 360;
 
-  // Map: 0° = value 0 (top), clockwise 120° = value 50, 240° = value 100
-  // Snap to nearest of the 3 values
   const segments = [
     { value: 0, center: 0 },
     { value: 50, center: 120 },
@@ -71,7 +66,6 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
     if (value <= 0) return '';
     const startAngle = -90;
     const endAngle = angleForValue(value);
-    // Calculate sweep going clockwise
     let sweep = endAngle - startAngle;
     if (sweep < 0) sweep += 360;
     const largeArc = sweep > 180 ? 1 : 0;
@@ -113,15 +107,12 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
       <span className="text-xs text-muted-foreground">{label}</span>
       <div className="relative w-[110px] h-[110px] select-none cursor-pointer" onPointerDown={handlePointerDown as any}>
         <svg ref={svgRef} viewBox="0 0 100 100" className="w-full h-full" style={{ touchAction: 'none' }}>
-          {/* Track circle */}
           <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke="hsl(var(--muted))" strokeWidth="2.5" />
 
-          {/* Active arc */}
           {value > 0 && (
             <path d={getArcPath()} fill="none" stroke={accentColor} strokeWidth="3.5" strokeLinecap="round" />
           )}
 
-          {/* Tick marks with labels - only 3 points */}
           {VALUE_ANGLES.map((va, i) => {
             const pos = getXY(va.angle);
             const isActive = va.value <= value;
@@ -134,8 +125,8 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
                   fill={isActive ? accentColor : 'hsl(var(--muted-foreground) / 0.3)'}
                 />
                 <text
-                  x={pos.x + (Math.cos((va.angle * Math.PI) / 180) * 12)}
-                  y={pos.y + (Math.sin((va.angle * Math.PI) / 180) * 12) + 1}
+                  x={pos.x + Math.cos((va.angle * Math.PI) / 180) * 12}
+                  y={pos.y + Math.sin((va.angle * Math.PI) / 180) * 12 + 1}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className="fill-muted-foreground/50 text-[7px] pointer-events-none"
@@ -146,7 +137,6 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
             );
           })}
 
-          {/* Draggable knob */}
           <circle
             cx={knobPos.x}
             cy={knobPos.y}
@@ -158,7 +148,6 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
             style={{ filter: dragging ? `drop-shadow(0 0 6px ${accentColor})` : 'none' }}
           />
 
-          {/* Center value */}
           <text x={CENTER} y={CENTER + 1} textAnchor="middle" dominantBaseline="middle" className="fill-foreground font-bold text-[16px] pointer-events-none">
             {value}%
           </text>
