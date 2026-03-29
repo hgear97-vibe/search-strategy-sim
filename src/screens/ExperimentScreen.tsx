@@ -1,42 +1,13 @@
 import { useGame } from '@/game/GameContext';
 import { SEARCH_TYPES, Strategy, SearchType, Allocation, calculateScores, emptyStrategy } from '@/game/engine';
-import { CheckCircle2, AlertTriangle } from 'lucide-react';
-
-const SNAP_VALUES = [0, 33, 50, 67, 100];
-
-function snapToNearest(val: number): number {
-  return SNAP_VALUES.reduce((prev, curr) =>
-    Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
-  );
-}
-
-interface DialProps {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-}
-
-function Dial({ label, value, onChange }: DialProps) {
-  return (
-    <div className="flex-1 space-y-1">
-      <div className="flex justify-between items-center">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="text-xs font-mono font-semibold text-foreground">{value}%</span>
-      </div>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        step={1}
-        value={value}
-        onChange={e => onChange(snapToNearest(Number(e.target.value)))}
-        className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary
-          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
-          [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-      />
-    </div>
-  );
-}
+import { CheckCircle2, AlertTriangle, Info, TrendingUp, TrendingDown } from 'lucide-react';
+import CircularDial from '@/components/CircularDial';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface Props {
   isFinal?: boolean;
@@ -61,7 +32,16 @@ export default function ExperimentScreen({ isFinal }: Props) {
     ])
   ) as Record<SearchType, number>;
 
-  const allValid = SEARCH_TYPES.every(st => totals[st.key] === 100);
+  // Allow 99 (33+33+33) as valid
+  const isValid = (total: number) => total === 100 || total === 99;
+  const allValid = SEARCH_TYPES.every(st => isValid(totals[st.key]));
+
+  // Get previous experiments for comparison
+  const prevExperiments = state.experiments;
+  const lastExp = prevExperiments.length > 0 ? prevExperiments[prevExperiments.length - 1] : null;
+
+  // Current live scores
+  const currentScores = allValid ? calculateScores(strategy) : null;
 
   const handleRun = () => {
     const scores = calculateScores(strategy);
@@ -93,23 +73,53 @@ export default function ExperimentScreen({ isFinal }: Props) {
     });
   };
 
+  const DeltaIcon = ({ current, previous }: { current: number; previous: number }) => {
+    if (current > previous) return <TrendingUp className="w-4 h-4 text-success inline" />;
+    if (current < previous) return <TrendingDown className="w-4 h-4 text-destructive inline" />;
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-background p-8 pt-20">
       <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {isFinal ? 'Final Strategy' : `Experiment ${state.currentExperiment} of 3`}
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Allocate traffic across modes for each search type. Each row must total 100%.
-            </p>
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                {isFinal ? 'Final Strategy' : `Experiment ${state.currentExperiment} of 3`}
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                Allocate traffic across modes for each search type. Each row must total 100%.
+              </p>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="p-1.5 rounded-full bg-warning/10 border border-warning/30 cursor-help">
+                    <Info className="w-4 h-4 text-warning" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p className="text-sm">⚠️ If your experiment causes a drastic drop in User Satisfaction or Ad Revenue below 40, the board will fire you immediately.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          {state.experiments.length > 0 && !isFinal && (
-            <div className="stat-card text-right text-sm space-y-1">
-              <p className="text-muted-foreground text-xs">Last Experiment</p>
-              <p>US: <span className="font-semibold text-google-blue">{state.experiments[state.experiments.length - 1].userSatisfaction}</span></p>
-              <p>AR: <span className="font-semibold text-google-green">{state.experiments[state.experiments.length - 1].adRevenue}</span></p>
+
+          {/* Past experiment scores */}
+          {prevExperiments.length > 0 && !isFinal && (
+            <div className="flex gap-3">
+              {prevExperiments.map((exp, i) => (
+                <div key={i} className="stat-card text-center text-sm px-4 py-3">
+                  <p className="text-muted-foreground text-xs mb-1">Exp {i + 1}</p>
+                  <p>US: <span className="font-semibold text-google-blue">{exp.userSatisfaction}</span>
+                    {i > 0 && <> <DeltaIcon current={exp.userSatisfaction} previous={prevExperiments[i-1].userSatisfaction} /></>}
+                  </p>
+                  <p>AR: <span className="font-semibold text-google-green">{exp.adRevenue}</span>
+                    {i > 0 && <> <DeltaIcon current={exp.adRevenue} previous={prevExperiments[i-1].adRevenue} /></>}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -117,23 +127,23 @@ export default function ExperimentScreen({ isFinal }: Props) {
         <div className="space-y-3">
           {SEARCH_TYPES.map(st => {
             const total = totals[st.key];
-            const valid = total === 100;
+            const valid = isValid(total);
             return (
               <div
                 key={st.key}
-                className={`stat-card flex items-start gap-6 ${
+                className={`stat-card flex items-center gap-6 ${
                   valid ? 'border-success/50' : total > 0 ? 'border-destructive/50' : ''
                 }`}
               >
-                <div className="w-48 flex-shrink-0">
+                <div className="w-44 flex-shrink-0">
                   <p className="font-semibold text-foreground">{st.label}</p>
                   <p className="text-xs text-muted-foreground">{st.description}</p>
                   <p className="text-xs text-muted-foreground/60 mt-1 italic">{st.examples}</p>
                 </div>
-                <div className="flex-1 flex gap-6">
-                  <Dial label="Blue Links" value={strategy[st.key].blueLinks} onChange={v => setAlloc(st.key, 'blueLinks', v)} />
-                  <Dial label="AI Overview" value={strategy[st.key].aiOverview} onChange={v => setAlloc(st.key, 'aiOverview', v)} />
-                  <Dial label="AI Mode" value={strategy[st.key].aiMode} onChange={v => setAlloc(st.key, 'aiMode', v)} />
+                <div className="flex-1 flex justify-center gap-8">
+                  <CircularDial label="Blue Links" value={strategy[st.key].blueLinks} onChange={v => setAlloc(st.key, 'blueLinks', v)} accentColor="hsl(var(--primary))" />
+                  <CircularDial label="AI Overview" value={strategy[st.key].aiOverview} onChange={v => setAlloc(st.key, 'aiOverview', v)} accentColor="hsl(var(--google-blue))" />
+                  <CircularDial label="AI Mode" value={strategy[st.key].aiMode} onChange={v => setAlloc(st.key, 'aiMode', v)} accentColor="hsl(var(--google-green))" />
                 </div>
                 <div className="w-24 flex-shrink-0 flex items-center gap-2 justify-end">
                   {valid ? (
