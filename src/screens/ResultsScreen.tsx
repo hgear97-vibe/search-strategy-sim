@@ -1,0 +1,156 @@
+import { useGame } from '@/game/GameContext';
+import { getHeadlines, SEARCH_TYPES, emptyStrategy, isFired as checkFired, calculateScores } from '@/game/engine';
+import ScoreGauge from '@/components/ScoreGauge';
+
+export default function ResultsScreen() {
+  const { state, dispatch } = useGame();
+  const lastExp = state.experiments[state.experiments.length - 1];
+  if (!lastExp) return null;
+
+  const { userSatisfaction: us, adRevenue: ar } = lastExp;
+  const headlines = getHeadlines(us, ar);
+  const expNum = state.experiments.length;
+  const boardAlert = us < 40 || ar < 40;
+
+  const handleNext = () => {
+    dispatch({ type: 'SET_STRATEGY', strategy: { ...lastExp.strategy } });
+    dispatch({ type: 'SET_SCREEN', screen: 'experiment' });
+  };
+
+  const handleSubmit = () => {
+    dispatch({ type: 'SET_STRATEGY', strategy: { ...lastExp.strategy } });
+    dispatch({ type: 'SET_SCREEN', screen: 'final' });
+  };
+
+  const handleForcedSubmit = () => {
+    const scores = calculateScores(lastExp.strategy);
+    dispatch({ type: 'SET_FINAL_RESULT', us: scores.userSatisfaction, ar: scores.adRevenue });
+    dispatch({
+      type: 'ADD_SCORE',
+      record: {
+        composite: 0,
+        us: scores.userSatisfaction,
+        ar: scores.adRevenue,
+        rating: 'Fired',
+        timestamp: new Date(),
+      },
+    });
+    dispatch({ type: 'SET_SCREEN', screen: 'fired' });
+  };
+
+  // Determine which search types to reveal insights for
+  const revealedTypes: string[] = [];
+  if (expNum >= 2) revealedTypes.push('informational', 'transactional');
+  if (expNum >= 3) revealedTypes.push('navigational', 'local');
+
+  return (
+    <div className="min-h-screen bg-background p-8 pt-20">
+      <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+        <h1 className="text-3xl font-bold text-foreground text-center">
+          Experiment {expNum} Results
+        </h1>
+
+        {boardAlert && (
+          <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 text-center">
+            <p className="text-destructive font-bold text-lg">🚨 BOARD ALERT</p>
+            <p className="text-destructive/80 text-sm">
+              The board demands immediate action. You must submit your final strategy now.
+            </p>
+          </div>
+        )}
+
+        <div className="flex justify-center gap-16">
+          <ScoreGauge label="User Satisfaction" value={us} color="hsl(var(--google-blue))" />
+          <ScoreGauge label="Ad Revenue" value={ar} color="hsl(var(--google-green))" />
+        </div>
+
+        {headlines.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">News Feed</h3>
+            {headlines.map((h, i) => (
+              <div key={i} className="stat-card flex items-start gap-3">
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-mono">{h.source}</span>
+                <p className="text-foreground text-sm">{h.headline}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Search Type Insights</h3>
+          {expNum === 1 ? (
+            <div className="stat-card">
+              <p className="text-muted-foreground text-sm italic">Insufficient data — aggregate metrics only.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {SEARCH_TYPES.map(st => {
+                if (st.key === 'research') {
+                  return (
+                    <div key={st.key} className="stat-card">
+                      <p className="text-sm font-semibold text-foreground">{st.label}</p>
+                      <p className="text-xs text-muted-foreground italic mt-1">Data inconclusive. Market still evolving.</p>
+                    </div>
+                  );
+                }
+                if (!revealedTypes.includes(st.key)) {
+                  return (
+                    <div key={st.key} className="stat-card">
+                      <p className="text-sm font-semibold text-foreground">{st.label}</p>
+                      <p className="text-xs text-muted-foreground italic mt-1">Data not yet available.</p>
+                    </div>
+                  );
+                }
+                // Show mini bar chart
+                const alloc = lastExp.strategy[st.key];
+                const table = { navigational: { bl: [75,90], ao: [55,60], am: [40,15] }, informational: { bl: [45,70], ao: [90,50], am: [85,20] }, transactional: { bl: [60,95], ao: [65,60], am: [70,15] }, local: { bl: [55,85], ao: [80,60], am: [70,20] } } as any;
+                const t = table[st.key];
+                if (!t) return null;
+                const typeUS = (alloc.blueLinks/100)*t.bl[0] + (alloc.aiOverview/100)*t.ao[0] + (alloc.aiMode/100)*t.am[0];
+                const typeAR = (alloc.blueLinks/100)*t.bl[1] + (alloc.aiOverview/100)*t.ao[1] + (alloc.aiMode/100)*t.am[1];
+                return (
+                  <div key={st.key} className="stat-card">
+                    <p className="text-sm font-semibold text-foreground mb-2">{st.label}</p>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="flex justify-between text-xs mb-0.5">
+                          <span className="text-muted-foreground">User Satisfaction</span>
+                          <span className="font-mono text-google-blue">{Math.round(typeUS)}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-google-blue rounded-full transition-all" style={{ width: `${typeUS}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs mb-0.5">
+                          <span className="text-muted-foreground">Ad Revenue</span>
+                          <span className="font-mono text-google-green">{Math.round(typeAR)}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-google-green rounded-full transition-all" style={{ width: `${typeAR}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-center gap-4 pt-4">
+          {!boardAlert && state.currentExperiment <= 3 && (
+            <button onClick={handleNext} className="game-button-primary">Next Experiment</button>
+          )}
+          {boardAlert ? (
+            <button onClick={handleForcedSubmit} className="game-button bg-destructive text-destructive-foreground hover:brightness-110">
+              Submit Final Strategy
+            </button>
+          ) : (
+            <button onClick={handleSubmit} className="game-button-secondary">Submit Final Strategy</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
