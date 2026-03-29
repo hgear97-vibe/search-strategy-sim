@@ -1,17 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '@/game/GameContext';
-import { getCompositeScore, getRating } from '@/game/engine';
+import { getCompositeScore, getRating, emptyStrategy } from '@/game/engine';
 import ScoreGauge from '@/components/ScoreGauge';
-import { emptyStrategy } from '@/game/engine';
 
 export default function ScoreScreen() {
   const { state, dispatch } = useGame();
-  const { finalResult, profile } = state;
-  if (!finalResult) return null;
-
-  const composite = getCompositeScore(finalResult.us, finalResult.ar);
-  const rating = getRating(composite);
   const [showComposite, setShowComposite] = useState(false);
 
   useEffect(() => {
@@ -19,6 +13,11 @@ export default function ScoreScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  const { finalResult, profile } = state;
+  if (!finalResult) return null;
+
+  const composite = getCompositeScore(finalResult.us, finalResult.ar);
+  const rating = getRating(composite);
   const avatarEmojis: Record<string, string> = { lion: '🦁', horse: '🐴', turtle: '🐢', shark: '🦈', eagle: '🦅' };
 
   return (
