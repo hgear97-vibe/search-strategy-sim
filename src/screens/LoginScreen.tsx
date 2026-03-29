@@ -13,6 +13,10 @@ export default function LoginScreen() {
         <p className="text-muted-foreground text-xl max-w-md mx-auto">
           Step into Sundar's shoes. Save Google Search.
         </p>
+        <div className="mt-4 space-y-1">
+          <p className="text-muted-foreground text-sm font-medium">Technology Strategy: Innovator's Dilemma</p>
+          <p className="text-muted-foreground text-sm">Columbia Business School</p>
+        </div>
         <button
           onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'profile' })}
           className="game-button bg-card border border-border text-foreground hover:border-primary/60 flex items-center gap-3 mx-auto px-8 py-4 text-base"

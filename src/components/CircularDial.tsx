@@ -5,12 +5,12 @@ const RADIUS = 38;
 const CENTER = 50;
 const KNOB_RADIUS = 8;
 
-// 0 at top (-90°), 33 at right (0°), 67 at bottom (90°), 100 at left (180°)
+// 3 points splitting circumference into thirds (120° apart)
+// 0 at top (-90°), 50 at bottom-right (150°), 100 at bottom-left (30° via -210°)
 const VALUE_ANGLES = [
   { value: 0, angle: -90 },
-  { value: 33, angle: 0 },
-  { value: 67, angle: 90 },
-  { value: 100, angle: 180 },
+  { value: 50, angle: 30 },
+  { value: 100, angle: 150 },
 ];
 
 function getXY(angleDeg: number) {
@@ -23,26 +23,27 @@ function angleFromMouse(cx: number, cy: number, mx: number, my: number): number 
 }
 
 function valueFromAngle(angleDeg: number): number {
-  // Map angle to value linearly: -90° = 0, 180° = 100
-  // Normalize angle to 0..270 range (where -90 becomes 0, 180 becomes 270)
+  // Normalize angle so that -90° (top) = 0°
   let normalized = angleDeg + 90;
-  if (normalized < -45) normalized += 360;
-  
-  // Clamp to 0..270 range
-  if (normalized < 0) normalized = 0;
-  if (normalized > 270) normalized = 270;
-  
-  // Map to 0..100
-  const raw = (normalized / 270) * 100;
-  
-  // Snap to nearest DIAL_VALUE
-  let bestVal = DIAL_VALUES[0];
+  if (normalized < 0) normalized += 360;
+  if (normalized >= 360) normalized -= 360;
+
+  // Map: 0° = value 0 (top), clockwise 120° = value 50, 240° = value 100
+  // Snap to nearest of the 3 values
+  const segments = [
+    { value: 0, center: 0 },
+    { value: 50, center: 120 },
+    { value: 100, center: 240 },
+  ];
+
+  let bestVal = 0;
   let bestDist = Infinity;
-  for (const v of DIAL_VALUES) {
-    const dist = Math.abs(raw - v);
+  for (const seg of segments) {
+    let dist = Math.abs(normalized - seg.center);
+    if (dist > 180) dist = 360 - dist;
     if (dist < bestDist) {
       bestDist = dist;
-      bestVal = v;
+      bestVal = seg.value;
     }
   }
   return bestVal;
@@ -70,7 +71,9 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
     if (value <= 0) return '';
     const startAngle = -90;
     const endAngle = angleForValue(value);
-    const sweep = endAngle - startAngle;
+    // Calculate sweep going clockwise
+    let sweep = endAngle - startAngle;
+    if (sweep < 0) sweep += 360;
     const largeArc = sweep > 180 ? 1 : 0;
     const start = getXY(startAngle);
     const end = getXY(endAngle);
@@ -118,7 +121,7 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
             <path d={getArcPath()} fill="none" stroke={accentColor} strokeWidth="3.5" strokeLinecap="round" />
           )}
 
-          {/* Tick marks with labels */}
+          {/* Tick marks with labels - only 3 points */}
           {VALUE_ANGLES.map((va, i) => {
             const pos = getXY(va.angle);
             const isActive = va.value <= value;
