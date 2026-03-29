@@ -37,7 +37,7 @@ export default function ProfileScreen() {
                 <button
                   key={a.id}
                   onClick={() => setAvatar(a.id)}
-                  className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden bg-card border-2 transition-all cursor-pointer ${
+                  className={`w-40 h-40 rounded-full flex items-center justify-center overflow-hidden bg-card border-2 transition-all cursor-pointer ${
                     avatar === a.id
                       ? 'border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)] scale-110'
                       : 'border-border hover:border-muted-foreground'
