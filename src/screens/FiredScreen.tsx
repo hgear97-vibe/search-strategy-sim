@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { AlertTriangle, RotateCcw } from 'lucide-react';
 import { useGame } from '@/game/GameContext';
 import { emptyStrategy } from '@/game/engine';
 
@@ -30,8 +31,25 @@ export default function FiredScreen() {
           transition={{ delay: 1 }}
           className="text-muted-foreground text-lg leading-relaxed"
         >
-          The board has lost confidence in your strategy, {username}. Google's stock is in freefall. Better luck next time.
+          The board has lost confidence in your strategy, {username}. Google's stock is in freefall — reset and come back stronger.
         </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3 }}
+          className="mx-auto w-fit rounded-xl border border-border bg-card px-5 py-4"
+        >
+          <div className="flex items-center gap-3">
+            <motion.div animate={{ rotate: [-6, 6, -6] }} transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}>
+              <AlertTriangle className="h-5 w-5 text-warning" />
+            </motion.div>
+            <p className="text-sm text-muted-foreground">Regroup and run a cleaner strategy next round.</p>
+            <motion.div animate={{ x: [0, 4, 0] }} transition={{ duration: 1.1, repeat: Infinity }}>
+              <RotateCcw className="h-5 w-5 text-primary" />
+            </motion.div>
+          </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -47,7 +65,7 @@ export default function FiredScreen() {
             }}
             className="game-button-primary"
           >
-            Try Again
+            Play Again
           </button>
         </motion.div>
       </motion.div>
