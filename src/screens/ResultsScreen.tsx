@@ -1,5 +1,5 @@
 import { useGame } from '@/game/GameContext';
-import { getHeadlines, SEARCH_TYPES, emptyStrategy, isFired as checkFired, calculateScores } from '@/game/engine';
+import { getHeadlines, SEARCH_TYPES, emptyStrategy, calculateScores } from '@/game/engine';
 import ScoreGauge from '@/components/ScoreGauge';
 
 export default function ResultsScreen() {
@@ -20,22 +20,6 @@ export default function ResultsScreen() {
   const handleSubmit = () => {
     dispatch({ type: 'SET_STRATEGY', strategy: { ...lastExp.strategy } });
     dispatch({ type: 'SET_SCREEN', screen: 'final' });
-  };
-
-  const handleForcedSubmit = () => {
-    const scores = calculateScores(lastExp.strategy);
-    dispatch({ type: 'SET_FINAL_RESULT', us: scores.userSatisfaction, ar: scores.adRevenue });
-    dispatch({
-      type: 'ADD_SCORE',
-      record: {
-        composite: 0,
-        us: scores.userSatisfaction,
-        ar: scores.adRevenue,
-        rating: 'Fired',
-        timestamp: new Date(),
-      },
-    });
-    dispatch({ type: 'SET_SCREEN', screen: 'fired' });
   };
 
   // Determine which search types to reveal insights for
@@ -101,7 +85,6 @@ export default function ResultsScreen() {
                     </div>
                   );
                 }
-                // Show mini bar chart
                 const alloc = lastExp.strategy[st.key];
                 const table = { navigational: { bl: [75,90], ao: [55,60], am: [40,15] }, informational: { bl: [45,70], ao: [90,50], am: [85,20] }, transactional: { bl: [60,95], ao: [65,60], am: [70,15] }, local: { bl: [55,85], ao: [80,60], am: [70,20] } } as any;
                 const t = table[st.key];
@@ -143,7 +126,7 @@ export default function ResultsScreen() {
             <button onClick={handleNext} className="game-button-primary">Next Experiment</button>
           )}
           {boardAlert ? (
-            <button onClick={handleForcedSubmit} className="game-button bg-destructive text-destructive-foreground hover:brightness-110">
+            <button onClick={handleSubmit} className="game-button bg-destructive text-destructive-foreground hover:brightness-110">
               Submit Final Strategy
             </button>
           ) : (

@@ -2,14 +2,7 @@ import { useState } from 'react';
 import { useGame } from '@/game/GameContext';
 import { Menu, X, Gamepad2, Trophy } from 'lucide-react';
 import { emptyStrategy } from '@/game/engine';
-
-const AVATARS = [
-  { id: 'lion', label: 'Lion', emoji: '🦁' },
-  { id: 'horse', label: 'Horse', emoji: '🐴' },
-  { id: 'turtle', label: 'Turtle', emoji: '🐢' },
-  { id: 'shark', label: 'Shark', emoji: '🦈' },
-  { id: 'eagle', label: 'Eagle', emoji: '🦅' },
-];
+import { getAvatarImage } from '@/game/avatars';
 
 export default function TopBar() {
   const { state, dispatch } = useGame();
@@ -17,13 +10,13 @@ export default function TopBar() {
 
   if (!state.profile) return null;
 
-  const avatar = AVATARS.find(a => a.id === state.profile!.avatar);
+  const avatarImg = getAvatarImage(state.profile.avatar);
 
   return (
     <>
       <div className="fixed top-0 right-0 z-50 p-4 flex items-center gap-3">
         <div className="flex items-center gap-2 bg-card border border-border rounded-full px-3 py-1.5">
-          <span className="text-lg">{avatar?.emoji}</span>
+          {avatarImg && <img src={avatarImg} alt="avatar" className="w-7 h-7 rounded-full object-cover" />}
           <span className="text-sm font-medium text-foreground">{state.profile.username}</span>
         </div>
         <button
