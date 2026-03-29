@@ -3,7 +3,8 @@ import { useGame } from '@/game/GameContext';
 import { emptyStrategy } from '@/game/engine';
 
 export default function FiredScreen() {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
+  const username = state.profile?.username || 'CEO';
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
@@ -29,7 +30,7 @@ export default function FiredScreen() {
           transition={{ delay: 1 }}
           className="text-muted-foreground text-lg leading-relaxed"
         >
-          The board has lost confidence in your strategy. Google's stock is in freefall. Better luck next time, Sundar.
+          The board has lost confidence in your strategy, {username}. Google's stock is in freefall. Better luck next time.
         </motion.p>
 
         <motion.div

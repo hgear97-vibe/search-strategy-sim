@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '@/game/GameContext';
-
-const AVATARS = [
-  { id: 'lion', label: 'Lion', emoji: '🦁' },
-  { id: 'horse', label: 'Horse', emoji: '🐴' },
-  { id: 'turtle', label: 'Turtle', emoji: '🐢' },
-  { id: 'shark', label: 'Shark', emoji: '🦈' },
-  { id: 'eagle', label: 'Eagle', emoji: '🦅' },
-];
+import { AVATARS } from '@/game/avatars';
 
 export default function ProfileScreen() {
   const { dispatch } = useGame();
@@ -44,14 +37,14 @@ export default function ProfileScreen() {
                 <button
                   key={a.id}
                   onClick={() => setAvatar(a.id)}
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl bg-card border-2 transition-all cursor-pointer ${
+                  className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden bg-card border-2 transition-all cursor-pointer ${
                     avatar === a.id
                       ? 'border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)] scale-110'
                       : 'border-border hover:border-muted-foreground'
                   }`}
                   title={a.label}
                 >
-                  {a.emoji}
+                  <img src={a.image} alt={a.label} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

@@ -2,12 +2,6 @@ import { useGame } from '@/game/GameContext';
 import { SEARCH_TYPES, Strategy, SearchType, Allocation, calculateScores, emptyStrategy } from '@/game/engine';
 import { CheckCircle2, AlertTriangle, Info, TrendingUp, TrendingDown } from 'lucide-react';
 import CircularDial from '@/components/CircularDial';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface Props {
   isFinal?: boolean;
@@ -32,16 +26,11 @@ export default function ExperimentScreen({ isFinal }: Props) {
     ])
   ) as Record<SearchType, number>;
 
-  // Allow 99 (33+33+33) as valid
   const isValid = (total: number) => total === 100 || total === 99;
   const allValid = SEARCH_TYPES.every(st => isValid(totals[st.key]));
 
-  // Get previous experiments for comparison
   const prevExperiments = state.experiments;
   const lastExp = prevExperiments.length > 0 ? prevExperiments[prevExperiments.length - 1] : null;
-
-  // Current live scores
-  const currentScores = allValid ? calculateScores(strategy) : null;
 
   const handleRun = () => {
     const scores = calculateScores(strategy);
@@ -83,27 +72,13 @@ export default function ExperimentScreen({ isFinal }: Props) {
     <div className="min-h-screen bg-background p-8 pt-20">
       <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {isFinal ? 'Final Strategy' : `Experiment ${state.currentExperiment} of 3`}
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1">
-                Allocate traffic across modes for each search type. Each row must total 100%.
-              </p>
-            </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="p-1.5 rounded-full bg-warning/10 border border-warning/30 cursor-help">
-                    <Info className="w-4 h-4 text-warning" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <p className="text-sm">⚠️ If your experiment causes a drastic drop in User Satisfaction or Ad Revenue below 40, the board will fire you immediately.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              {isFinal ? 'Final Strategy' : `Experiment ${state.currentExperiment} of 3`}
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Allocate traffic across modes for each search type. Each row must total 100%.
+            </p>
           </div>
 
           {/* Past experiment scores */}
@@ -122,6 +97,16 @@ export default function ExperimentScreen({ isFinal }: Props) {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Sticky warning banner */}
+        <div className="flex items-center gap-3 bg-warning/10 border border-warning/30 rounded-lg px-4 py-3">
+          <div className="p-1.5 rounded-full bg-warning/20">
+            <AlertTriangle className="w-4 h-4 text-warning" />
+          </div>
+          <p className="text-sm text-warning">
+            ⚠️ If your experiment causes a drastic drop in User Satisfaction or Ad Revenue below 40, the board will fire you immediately.
+          </p>
         </div>
 
         <div className="space-y-3">
