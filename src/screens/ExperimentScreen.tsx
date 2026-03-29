@@ -105,7 +105,7 @@ export default function ExperimentScreen({ isFinal }: Props) {
             <AlertTriangle className="w-4 h-4 text-warning" />
           </div>
           <p className="text-sm text-warning">
-            ⚠️ If your experiment causes a drastic drop in User Satisfaction or Ad Revenue below 40, the board will fire you immediately.
+            If your experiment causes a drastic drop in User Satisfaction or Ad Revenue below 40, the board will fire you immediately.
           </p>
         </div>
 
