@@ -39,7 +39,29 @@ export default function ScoreScreen() {
             <p className="text-muted-foreground text-sm uppercase tracking-wider">Composite Score</p>
             <p className="text-7xl font-bold text-foreground">{composite}</p>
             <p className={`text-2xl font-semibold ${rating.color}`}>{rating.label}</p>
-            <div className="flex items-center justify-center gap-3 pt-4">
+
+            <motion.div
+              className="relative mx-auto mt-2 h-24 w-24"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <motion.div
+                className="absolute inset-0 rounded-full bg-primary/20"
+                animate={{ scale: [1, 1.35, 1], opacity: [0.55, 0.2, 0.55] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <motion.div
+                className="absolute inset-2 rounded-full bg-success/20"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.15, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center text-4xl">🎉</div>
+            </motion.div>
+
+            <p className="text-sm text-muted-foreground">Great finish — you made it to the end.</p>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
               {avatarImg ? (
                 <img src={avatarImg} alt={profile?.avatar} className="w-16 h-16 rounded-full object-cover border-2 border-primary" />
               ) : (
