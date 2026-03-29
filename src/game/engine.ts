@@ -60,29 +60,30 @@ export function isFired(us: number, ar: number): boolean {
 }
 
 // Headline engine
-interface Headline {
+export interface Headline {
+  id: string;
   headline: string;
   source: string;
   trigger: (us: number, ar: number) => boolean;
 }
 
 export const HEADLINES: Headline[] = [
-  { headline: "Google Ad Revenue Plunges as AI Search Cannibalizes Click-Through Rates", source: "WSJ", trigger: (_, ar) => ar < 40 },
-  { headline: "Alphabet Stock Drops 12% After Disastrous Search Revenue Report", source: "Bloomberg", trigger: (_, ar) => ar < 35 },
-  { headline: "Advertisers Flee Google as AI Mode Eliminates Sponsored Results", source: "AdAge", trigger: (_, ar) => ar < 45 },
-  { headline: "Google Search Users Revolt: 'Just Give Us the Links Back'", source: "The Verge", trigger: (us, _) => us < 40 },
-  { headline: "User Satisfaction Hits All-Time Low as Google Doubles Down on AI", source: "TechCrunch", trigger: (us, _) => us < 45 },
-  { headline: "Perplexity CEO: 'Google is Handing Us the Market on a Silver Platter'", source: "CNBC", trigger: (us, _) => us < 50 },
-  { headline: "ChatGPT Search Usage Surges 40% as Google Users Seek Alternatives", source: "Reuters", trigger: (us, ar) => us < 55 && ar < 55 },
-  { headline: "Google Walks AI Tightrope: Revenue Stable but User Trust Eroding", source: "NYT", trigger: (us, ar) => ar > 60 && us < 55 },
-  { headline: "Analysts Warn: Google's AI Transition Could Take Years to Monetize", source: "Financial Times", trigger: (_, ar) => ar < 60 && ar >= 40 },
-  { headline: "Google's Bold AI Bet Pays Off: User Satisfaction Surges", source: "TechCrunch", trigger: (us, _) => us > 75 },
-  { headline: "Wall Street Applauds Google's Balanced AI Search Strategy", source: "WSJ", trigger: (us, ar) => us > 65 && ar > 65 },
-  { headline: "Google Proves AI and Ads Can Coexist, Revenue Holds Steady", source: "Bloomberg", trigger: (us, ar) => ar > 70 && us > 55 },
-  { headline: "Pichai's Masterclass: Google Search Revenue Hits New Highs Amid AI Shift", source: "Forbes", trigger: (us, ar) => ar > 80 && us > 60 },
-  { headline: "Google's AI Overview Wins Users Without Losing Advertisers", source: "Wired", trigger: (us, ar) => us > 70 && ar > 60 },
-  { headline: "Search Wars 2025: Google Maintains Dominance with Hybrid Approach", source: "The Information", trigger: (us, ar) => us > 60 && ar > 60 },
-  { headline: "OpenAI Struggles to Compete as Google Nails AI Search Integration", source: "Ars Technica", trigger: (us, ar) => us > 75 && ar > 70 },
+  { id: 'H1', headline: "Google Ad Revenue Plunges as AI Search Cannibalizes Click-Through Rates", source: "WSJ", trigger: (_, ar) => ar < 40 },
+  { id: 'H2', headline: "Alphabet Stock Drops 12% After Disastrous Search Revenue Report", source: "Bloomberg", trigger: (_, ar) => ar < 35 },
+  { id: 'H3', headline: "Advertisers Flee Google as AI Mode Eliminates Sponsored Results", source: "AdAge", trigger: (_, ar) => ar < 45 },
+  { id: 'H4', headline: "Google Search Users Revolt: 'Just Give Us the Links Back'", source: "The Verge", trigger: (us, _) => us < 40 },
+  { id: 'H5', headline: "User Satisfaction Hits All-Time Low as Google Doubles Down on AI", source: "TechCrunch", trigger: (us, _) => us < 45 },
+  { id: 'H6', headline: "Perplexity CEO: 'Google is Handing Us the Market on a Silver Platter'", source: "CNBC", trigger: (us, _) => us < 50 },
+  { id: 'H7', headline: "ChatGPT Search Usage Surges 40% as Google Users Seek Alternatives", source: "Reuters", trigger: (us, ar) => us < 55 && ar < 55 },
+  { id: 'H8', headline: "Google Walks AI Tightrope: Revenue Stable but User Trust Eroding", source: "NYT", trigger: (us, ar) => ar > 60 && us < 55 },
+  { id: 'H9', headline: "Analysts Warn: Google's AI Transition Could Take Years to Monetize", source: "Financial Times", trigger: (_, ar) => ar < 60 && ar >= 40 },
+  { id: 'H10', headline: "Google's Bold AI Bet Pays Off: User Satisfaction Surges", source: "TechCrunch", trigger: (us, _) => us > 75 },
+  { id: 'H11', headline: "Wall Street Applauds Google's Balanced AI Search Strategy", source: "WSJ", trigger: (us, ar) => us > 65 && ar > 65 },
+  { id: 'H12', headline: "Google Proves AI and Ads Can Coexist, Revenue Holds Steady", source: "Bloomberg", trigger: (us, ar) => ar > 70 && us > 55 },
+  { id: 'H13', headline: "Pichai's Masterclass: Google Search Revenue Hits New Highs Amid AI Shift", source: "Forbes", trigger: (us, ar) => ar > 80 && us > 60 },
+  { id: 'H14', headline: "Google's AI Overview Wins Users Without Losing Advertisers", source: "Wired", trigger: (us, ar) => us > 70 && ar > 60 },
+  { id: 'H15', headline: "Search Wars 2025: Google Maintains Dominance with Hybrid Approach", source: "The Information", trigger: (us, ar) => us > 60 && ar > 60 },
+  { id: 'H16', headline: "OpenAI Struggles to Compete as Google Nails AI Search Integration", source: "Ars Technica", trigger: (us, ar) => us > 75 && ar > 70 },
 ];
 
 export function getHeadlines(us: number, ar: number): Headline[] {

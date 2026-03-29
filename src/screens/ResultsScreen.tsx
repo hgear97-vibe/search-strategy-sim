@@ -1,7 +1,30 @@
 import { useGame } from '@/game/GameContext';
-import { getHeadlines, SEARCH_TYPES, emptyStrategy, calculateScores } from '@/game/engine';
+import { getHeadlines, SEARCH_TYPES } from '@/game/engine';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import ScoreGauge from '@/components/ScoreGauge';
+import H1 from '@/assets/headlines/H1.png';
+import H2 from '@/assets/headlines/H2.png';
+import H3 from '@/assets/headlines/H3.png';
+import H4 from '@/assets/headlines/H4.png';
+import H5 from '@/assets/headlines/H5.png';
+import H6 from '@/assets/headlines/H6.png';
+import H7 from '@/assets/headlines/H7.png';
+import H8 from '@/assets/headlines/H8.png';
+import H9 from '@/assets/headlines/H9.png';
+import H10 from '@/assets/headlines/H10.png';
+
+const headlineImageMap: Record<string, string> = {
+  H1,
+  H2,
+  H3,
+  H4,
+  H5,
+  H6,
+  H7,
+  H8,
+  H9,
+  H10,
+};
 
 export default function ResultsScreen() {
   const { state, dispatch } = useGame();
@@ -42,7 +65,6 @@ export default function ResultsScreen() {
             Experiment {expNum} Results
           </h1>
 
-          {/* Past experiment scores */}
           {prevExperiments.length > 1 && (
             <div className="flex gap-3">
               {prevExperiments.slice(0, -1).map((exp, i) => (
@@ -87,12 +109,25 @@ export default function ResultsScreen() {
         {headlines.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">News Feed</h3>
-            {headlines.map((h, i) => (
-              <div key={i} className="stat-card flex items-start gap-3">
-                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-mono">{h.source}</span>
-                <p className="text-foreground text-sm">{h.headline}</p>
-              </div>
-            ))}
+            {headlines.map((h, i) => {
+              const image = headlineImageMap[h.id];
+              return (
+                <div key={i} className="stat-card flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-mono">{h.source}</span>
+                    <p className="text-foreground text-sm">{h.headline}</p>
+                  </div>
+                  {image && (
+                    <img
+                      src={image}
+                      alt={h.headline}
+                      loading="lazy"
+                      className="w-full h-auto rounded-md border border-border object-cover"
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
