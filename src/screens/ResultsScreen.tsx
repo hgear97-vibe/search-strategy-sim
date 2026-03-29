@@ -66,21 +66,23 @@ export default function ResultsScreen() {
         )}
 
         <div className="flex justify-center gap-16">
-          <ScoreGauge label="User Satisfaction" value={us} color="hsl(var(--google-blue))" />
-          <ScoreGauge label="Ad Revenue" value={ar} color="hsl(var(--google-green))" />
-        </div>
-
-        {/* Delta indicators for current experiment vs previous */}
-        {prevExperiments.length > 1 && (
-          <div className="flex justify-center gap-8 text-sm">
-            <span className="text-muted-foreground">
-              US vs Exp {expNum - 1}: <DeltaIcon current={us} previous={prevExperiments[expNum - 2].userSatisfaction} />
-            </span>
-            <span className="text-muted-foreground">
-              AR vs Exp {expNum - 1}: <DeltaIcon current={ar} previous={prevExperiments[expNum - 2].adRevenue} />
-            </span>
+          <div className="flex flex-col items-center">
+            <ScoreGauge label="User Satisfaction" value={us} color="hsl(var(--google-blue))" />
+            {prevExperiments.length > 1 && (
+              <span className="text-muted-foreground text-sm mt-2">
+                vs Exp {expNum - 1}: <DeltaIcon current={us} previous={prevExperiments[expNum - 2].userSatisfaction} />
+              </span>
+            )}
           </div>
-        )}
+          <div className="flex flex-col items-center">
+            <ScoreGauge label="Ad Revenue" value={ar} color="hsl(var(--google-green))" />
+            {prevExperiments.length > 1 && (
+              <span className="text-muted-foreground text-sm mt-2">
+                vs Exp {expNum - 1}: <DeltaIcon current={ar} previous={prevExperiments[expNum - 2].adRevenue} />
+              </span>
+            )}
+          </div>
+        </div>
 
         {headlines.length > 0 && (
           <div className="space-y-3">
