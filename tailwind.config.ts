@@ -64,6 +64,7 @@ export default {
           red: "hsl(var(--google-red))",
           yellow: "hsl(var(--google-yellow))",
           green: "hsl(var(--google-green))",
+          purple: "hsl(var(--google-purple))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

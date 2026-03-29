@@ -82,7 +82,7 @@ export default function ExperimentScreen({ isFinal }: Props) {
           </div>
 
           {/* Past experiment scores */}
-          {prevExperiments.length > 0 && !isFinal && (
+          {prevExperiments.length > 0 && (
             <div className="flex gap-3">
               {prevExperiments.map((exp, i) => (
                 <div key={i} className="stat-card text-center text-sm px-4 py-3">
@@ -127,7 +127,7 @@ export default function ExperimentScreen({ isFinal }: Props) {
                 </div>
                 <div className="flex-1 flex justify-center gap-8">
                   <CircularDial label="Blue Links" value={strategy[st.key].blueLinks} onChange={v => setAlloc(st.key, 'blueLinks', v)} accentColor="hsl(var(--primary))" />
-                  <CircularDial label="AI Overview" value={strategy[st.key].aiOverview} onChange={v => setAlloc(st.key, 'aiOverview', v)} accentColor="hsl(var(--google-blue))" />
+                  <CircularDial label="AI Overview" value={strategy[st.key].aiOverview} onChange={v => setAlloc(st.key, 'aiOverview', v)} accentColor="hsl(var(--google-purple))" />
                   <CircularDial label="AI Mode" value={strategy[st.key].aiMode} onChange={v => setAlloc(st.key, 'aiMode', v)} accentColor="hsl(var(--google-green))" />
                 </div>
                 <div className="w-24 flex-shrink-0 flex items-center gap-2 justify-end">

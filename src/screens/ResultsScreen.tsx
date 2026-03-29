@@ -1,5 +1,6 @@
 import { useGame } from '@/game/GameContext';
 import { getHeadlines, SEARCH_TYPES, emptyStrategy, calculateScores } from '@/game/engine';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import ScoreGauge from '@/components/ScoreGauge';
 
 export default function ResultsScreen() {
@@ -11,6 +12,7 @@ export default function ResultsScreen() {
   const headlines = getHeadlines(us, ar);
   const expNum = state.experiments.length;
   const boardAlert = us < 40 || ar < 40;
+  const prevExperiments = state.experiments;
 
   const handleNext = () => {
     dispatch({ type: 'SET_STRATEGY', strategy: { ...lastExp.strategy } });
@@ -22,17 +24,37 @@ export default function ResultsScreen() {
     dispatch({ type: 'SET_SCREEN', screen: 'final' });
   };
 
-  // Determine which search types to reveal insights for
   const revealedTypes: string[] = [];
   if (expNum >= 2) revealedTypes.push('informational', 'transactional');
   if (expNum >= 3) revealedTypes.push('navigational', 'local');
 
+  const DeltaIcon = ({ current, previous }: { current: number; previous: number }) => {
+    if (current > previous) return <TrendingUp className="w-4 h-4 text-success inline" />;
+    if (current < previous) return <TrendingDown className="w-4 h-4 text-destructive inline" />;
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-background p-8 pt-20">
       <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
-        <h1 className="text-3xl font-bold text-foreground text-center">
-          Experiment {expNum} Results
-        </h1>
+        <div className="flex justify-between items-start">
+          <h1 className="text-3xl font-bold text-foreground">
+            Experiment {expNum} Results
+          </h1>
+
+          {/* Past experiment scores */}
+          {prevExperiments.length > 1 && (
+            <div className="flex gap-3">
+              {prevExperiments.slice(0, -1).map((exp, i) => (
+                <div key={i} className="stat-card text-center text-sm px-4 py-3">
+                  <p className="text-muted-foreground text-xs mb-1">Exp {i + 1}</p>
+                  <p>US: <span className="font-semibold text-google-blue">{exp.userSatisfaction}</span></p>
+                  <p>AR: <span className="font-semibold text-google-green">{exp.adRevenue}</span></p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {boardAlert && (
           <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 text-center">
@@ -47,6 +69,18 @@ export default function ResultsScreen() {
           <ScoreGauge label="User Satisfaction" value={us} color="hsl(var(--google-blue))" />
           <ScoreGauge label="Ad Revenue" value={ar} color="hsl(var(--google-green))" />
         </div>
+
+        {/* Delta indicators for current experiment vs previous */}
+        {prevExperiments.length > 1 && (
+          <div className="flex justify-center gap-8 text-sm">
+            <span className="text-muted-foreground">
+              US vs Exp {expNum - 1}: <DeltaIcon current={us} previous={prevExperiments[expNum - 2].userSatisfaction} />
+            </span>
+            <span className="text-muted-foreground">
+              AR vs Exp {expNum - 1}: <DeltaIcon current={ar} previous={prevExperiments[expNum - 2].adRevenue} />
+            </span>
+          </div>
+        )}
 
         {headlines.length > 0 && (
           <div className="space-y-3">
