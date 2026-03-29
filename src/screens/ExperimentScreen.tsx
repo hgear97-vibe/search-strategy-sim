@@ -82,7 +82,7 @@ export default function ExperimentScreen({ isFinal }: Props) {
           </div>
 
           {/* Past experiment scores */}
-          {prevExperiments.length > 0 && !isFinal && (
+          {prevExperiments.length > 0 && (
             <div className="flex gap-3">
               {prevExperiments.map((exp, i) => (
                 <div key={i} className="stat-card text-center text-sm px-4 py-3">
