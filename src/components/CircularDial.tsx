@@ -4,11 +4,13 @@ const RADIUS = 38;
 const CENTER = 50;
 const KNOB_RADIUS = 8;
 
-// 3 points splitting circumference into thirds (120° apart)
+// 4 points with snapping thresholds around 33 and 67
+// 0 at top (-90°), 33 at right (0°), 67 at bottom (90°), 100 at left (180°)
 const VALUE_ANGLES = [
   { value: 0, angle: -90 },
-  { value: 50, angle: 30 },
-  { value: 100, angle: 150 },
+  { value: 33, angle: 0 },
+  { value: 67, angle: 90 },
+  { value: 100, angle: 180 },
 ];
 
 function getXY(angleDeg: number) {
@@ -21,27 +23,20 @@ function angleFromMouse(cx: number, cy: number, mx: number, my: number): number 
 }
 
 function valueFromAngle(angleDeg: number): number {
-  let normalized = angleDeg + 90;
-  if (normalized < 0) normalized += 360;
-  if (normalized >= 360) normalized -= 360;
+  // Convert to clockwise progress from top in [0, 270]
+  // -90 => 0, 0 => 90, 90 => 180, 180 => 270
+  let progress = angleDeg + 90;
+  if (progress < 0) progress += 360;
+  if (progress > 270) progress = 270;
 
-  const segments = [
-    { value: 0, center: 0 },
-    { value: 50, center: 120 },
-    { value: 100, center: 240 },
-  ];
+  // Raw percentage on the dial's active 270° arc
+  const pct = (progress / 270) * 100;
 
-  let bestVal = 0;
-  let bestDist = Infinity;
-  for (const seg of segments) {
-    let dist = Math.abs(normalized - seg.center);
-    if (dist > 180) dist = 360 - dist;
-    if (dist < bestDist) {
-      bestDist = dist;
-      bestVal = seg.value;
-    }
-  }
-  return bestVal;
+  // Threshold behavior requested:
+  // below 33 => 0, 33..67 => snap to 33 or 67 midpoint split, above 67 => 100
+  if (pct < 33) return 0;
+  if (pct > 67) return 100;
+  return pct < 50 ? 33 : 67;
 }
 
 function angleForValue(value: number): number {
@@ -66,8 +61,7 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
     if (value <= 0) return '';
     const startAngle = -90;
     const endAngle = angleForValue(value);
-    let sweep = endAngle - startAngle;
-    if (sweep < 0) sweep += 360;
+    const sweep = endAngle - startAngle;
     const largeArc = sweep > 180 ? 1 : 0;
     const start = getXY(startAngle);
     const end = getXY(endAngle);
