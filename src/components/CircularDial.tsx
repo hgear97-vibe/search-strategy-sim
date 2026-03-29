@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 
-const DIAL_VALUES = [0, 33, 67, 100];
+const RADIUS = 38;
 const RADIUS = 38;
 const CENTER = 50;
 const KNOB_RADIUS = 8;
