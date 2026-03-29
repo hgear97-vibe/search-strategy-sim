@@ -1,12 +1,14 @@
+import { useRef } from 'react';
 import { useGame } from '@/game/GameContext';
 import { getHeadlines, SEARCH_TYPES } from '@/game/engine';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
 import ScoreGauge from '@/components/ScoreGauge';
 import H1 from '@/assets/headlines/H1.png';
 
 export default function ResultsScreen() {
   const { state, dispatch } = useGame();
   const lastExp = state.experiments[state.experiments.length - 1];
+  const newsScrollRef = useRef<HTMLDivElement>(null);
   if (!lastExp) return null;
 
   const { userSatisfaction: us, adRevenue: ar } = lastExp;
@@ -23,6 +25,13 @@ export default function ResultsScreen() {
   const handleSubmit = () => {
     dispatch({ type: 'SET_STRATEGY', strategy: { ...lastExp.strategy } });
     dispatch({ type: 'SET_SCREEN', screen: 'final' });
+  };
+
+  const scrollNews = (direction: 'left' | 'right') => {
+    newsScrollRef.current?.scrollBy({
+      left: direction === 'left' ? -420 : 420,
+      behavior: 'smooth',
+    });
   };
 
   const revealedTypes: string[] = [];
@@ -86,21 +95,47 @@ export default function ResultsScreen() {
 
         {headlines.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">News Feed</h3>
-            {headlines.map((h, i) => (
-              <div key={i} className="stat-card flex flex-col gap-3">
-                <div className="flex items-start gap-3">
-                  <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-mono">{h.source}</span>
-                  <p className="text-foreground text-sm">{h.headline}</p>
-                </div>
-                <img
-                  src={H1}
-                  alt={h.headline}
-                  loading="lazy"
-                  className="w-full max-w-2xl h-auto rounded-md border border-border object-cover"
-                />
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">News Feed</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => scrollNews('left')}
+                  className="h-8 w-8 rounded-full border border-border bg-card text-foreground hover-scale flex items-center justify-center"
+                  aria-label="Scroll news left"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollNews('right')}
+                  className="h-8 w-8 rounded-full border border-border bg-card text-foreground hover-scale flex items-center justify-center"
+                  aria-label="Scroll news right"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
-            ))}
+            </div>
+
+            <div
+              ref={newsScrollRef}
+              className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth"
+            >
+              {headlines.map((h, i) => (
+                <article key={i} className="stat-card min-w-[360px] max-w-[360px] flex-shrink-0 snap-start flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-mono">{h.source}</span>
+                    <p className="text-foreground text-sm">{h.headline}</p>
+                  </div>
+                  <img
+                    src={H1}
+                    alt={h.headline}
+                    loading="lazy"
+                    className="w-full h-44 rounded-md border border-border object-cover"
+                  />
+                </article>
+              ))}
+            </div>
           </div>
         )}
 
@@ -133,8 +168,8 @@ export default function ResultsScreen() {
                 const table = { navigational: { bl: [75,90], ao: [55,60], am: [40,15] }, informational: { bl: [45,70], ao: [90,50], am: [85,20] }, transactional: { bl: [60,95], ao: [65,60], am: [70,15] }, local: { bl: [55,85], ao: [80,60], am: [70,20] } } as any;
                 const t = table[st.key];
                 if (!t) return null;
-                const typeUS = (alloc.blueLinks/100)*t.bl[0] + (alloc.aiOverview/100)*t.ao[0] + (alloc.aiMode/100)*t.am[0];
-                const typeAR = (alloc.blueLinks/100)*t.bl[1] + (alloc.aiOverview/100)*t.ao[1] + (alloc.aiMode/100)*t.am[1];
+                const typeUS = (alloc.blueLinks / 100) * t.bl[0] + (alloc.aiOverview / 100) * t.ao[0] + (alloc.aiMode / 100) * t.am[0];
+                const typeAR = (alloc.blueLinks / 100) * t.bl[1] + (alloc.aiOverview / 100) * t.ao[1] + (alloc.aiMode / 100) * t.am[1];
                 return (
                   <div key={st.key} className="stat-card">
                     <p className="text-sm font-semibold text-foreground mb-2">{st.label}</p>
