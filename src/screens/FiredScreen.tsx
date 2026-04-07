@@ -1,11 +1,38 @@
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import { useGame } from '@/game/GameContext';
+import { useAuth } from '@/game/AuthContext';
 import { emptyStrategy } from '@/game/engine';
 
 export default function FiredScreen() {
   const { state, dispatch } = useGame();
+  const { saveScore } = useAuth();
   const username = state.profile?.username || 'CEO';
+  const scoreSaved = useRef(false);
+
+  // Save fired score to Supabase on mount (once)
+  useEffect(() => {
+    if (!scoreSaved.current) {
+      scoreSaved.current = true;
+      const us = state.finalResult?.us ?? 0;
+      const ar = state.finalResult?.ar ?? 0;
+
+      saveScore(us, ar, 0, "You're Fired", true)
+        .catch(err => console.error('Failed to save fired score:', err));
+
+      dispatch({
+        type: 'ADD_SCORE',
+        record: {
+          composite: 0,
+          us,
+          ar,
+          rating: "You're Fired",
+          timestamp: new Date(),
+        },
+      });
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">

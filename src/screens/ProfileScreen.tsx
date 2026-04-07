@@ -1,13 +1,31 @@
 import { useState } from 'react';
 import { useGame } from '@/game/GameContext';
+import { useAuth } from '@/game/AuthContext';
 import { AVATARS } from '@/game/avatars';
 
 export default function ProfileScreen() {
   const { dispatch } = useGame();
+  const { createProfile } = useAuth();
   const [username, setUsername] = useState('');
   const [avatar, setAvatar] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const canContinue = username.trim().length > 0 && avatar;
+  const canContinue = username.trim().length > 0 && avatar && !saving;
+
+  const handleContinue = async () => {
+    if (!canContinue) return;
+    try {
+      setSaving(true);
+      setError(null);
+      await createProfile(username.trim(), avatar);
+      dispatch({ type: 'SET_PROFILE', profile: { username: username.trim(), avatar } });
+      dispatch({ type: 'SET_SCREEN', screen: 'brief' });
+    } catch (err: any) {
+      setError(err.message || 'Failed to save profile. Please try again.');
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -50,17 +68,16 @@ export default function ProfileScreen() {
             </div>
           </div>
 
+          {error && (
+            <p className="text-destructive text-sm text-center">{error}</p>
+          )}
+
           <button
-            onClick={() => {
-              if (canContinue) {
-                dispatch({ type: 'SET_PROFILE', profile: { username, avatar } });
-                dispatch({ type: 'SET_SCREEN', screen: 'brief' });
-              }
-            }}
+            onClick={handleContinue}
             disabled={!canContinue}
             className={`w-full game-button-primary ${!canContinue ? 'opacity-40 cursor-not-allowed' : ''}`}
           >
-            Continue
+            {saving ? 'Saving...' : 'Continue'}
           </button>
         </div>
       </div>

@@ -1,16 +1,25 @@
 import { useState } from 'react';
 import { useGame } from '@/game/GameContext';
-import { Menu, X, Gamepad2, Trophy } from 'lucide-react';
+import { useAuth } from '@/game/AuthContext';
+import { Menu, X, Gamepad2, Trophy, LogOut } from 'lucide-react';
 import { emptyStrategy } from '@/game/engine';
 import { getAvatarImage } from '@/game/avatars';
 
 export default function TopBar() {
   const { state, dispatch } = useGame();
+  const { signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!state.profile) return null;
 
   const avatarImg = getAvatarImage(state.profile.avatar);
+
+  const handleSignOut = async () => {
+    setMenuOpen(false);
+    await signOut();
+    dispatch({ type: 'RESET_GAME' });
+    dispatch({ type: 'SET_SCREEN', screen: 'login' });
+  };
 
   return (
     <>
@@ -54,6 +63,14 @@ export default function TopBar() {
             >
               <Trophy className="w-4 h-4 text-warning" />
               Past Scores
+            </button>
+            <div className="border-t border-border" />
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent transition-colors"
+            >
+              <LogOut className="w-4 h-4 text-muted-foreground" />
+              Sign Out
             </button>
           </div>
         </>

@@ -1,24 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '@/game/GameContext';
+import { useAuth } from '@/game/AuthContext';
 import { getCompositeScore, getRating, emptyStrategy } from '@/game/engine';
 import { getAvatarImage } from '@/game/avatars';
 import ScoreGauge from '@/components/ScoreGauge';
 
 export default function ScoreScreen() {
   const { state, dispatch } = useGame();
+  const { saveScore } = useAuth();
   const [showComposite, setShowComposite] = useState(false);
+  const scoreSaved = useRef(false);
+
+  const { finalResult, profile } = state;
+  const composite = finalResult ? getCompositeScore(finalResult.us, finalResult.ar) : 0;
+  const rating = finalResult ? getRating(composite) : { label: '', color: '' };
+
+  // Save score to Supabase on mount (once)
+  useEffect(() => {
+    if (finalResult && !scoreSaved.current) {
+      scoreSaved.current = true;
+      const r = getRating(getCompositeScore(finalResult.us, finalResult.ar));
+
+      // Save to Supabase (fire and forget — don't block UI)
+      saveScore(finalResult.us, finalResult.ar, getCompositeScore(finalResult.us, finalResult.ar), r.label, false)
+        .catch(err => console.error('Failed to save score:', err));
+
+      // Also save to local game state for immediate display
+      dispatch({
+        type: 'ADD_SCORE',
+        record: {
+          composite: getCompositeScore(finalResult.us, finalResult.ar),
+          us: finalResult.us,
+          ar: finalResult.ar,
+          rating: r.label,
+          timestamp: new Date(),
+        },
+      });
+    }
+  }, [finalResult]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowComposite(true), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  const { finalResult, profile } = state;
   if (!finalResult) return null;
 
-  const composite = getCompositeScore(finalResult.us, finalResult.ar);
-  const rating = getRating(composite);
   const avatarImg = getAvatarImage(profile?.avatar || '');
 
   return (

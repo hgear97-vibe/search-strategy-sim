@@ -1,9 +1,35 @@
+import { useEffect, useState } from 'react';
 import { useGame } from '@/game/GameContext';
+import { useAuth, ScoreRecord } from '@/game/AuthContext';
 import { Trophy } from 'lucide-react';
 
 export default function HistoryScreen() {
   const { state, dispatch } = useGame();
-  const history = state.scoreHistory;
+  const { loadScores } = useAuth();
+  const [history, setHistory] = useState<ScoreRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadScores()
+      .then(scores => {
+        setHistory(scores);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fallback to local game state if Supabase fails
+        setHistory(state.scoreHistory.map((r, i) => ({
+          id: String(i),
+          composite: r.composite,
+          us: r.us,
+          ar: r.ar,
+          rating: r.rating,
+          fired: false,
+          timestamp: r.timestamp,
+        })));
+        setLoading(false);
+      });
+  }, []);
+
   const best = history.length > 0 ? Math.max(...history.map(h => h.composite)) : -1;
 
   return (
@@ -19,24 +45,33 @@ export default function HistoryScreen() {
           </button>
         </div>
 
-        {history.length === 0 ? (
+        {loading ? (
+          <div className="stat-card text-center py-12">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-muted-foreground">Loading scores...</p>
+          </div>
+        ) : history.length === 0 ? (
           <div className="stat-card text-center py-12">
             <p className="text-muted-foreground">No games played yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {history.map((r, i) => (
+            {history.map((r) => (
               <div
-                key={i}
+                key={r.id}
                 className={`stat-card flex items-center justify-between ${
-                  r.composite === best ? 'border-warning/50' : ''
-                }`}
+                  r.composite === best && !r.fired ? 'border-warning/50' : ''
+                } ${r.fired ? 'border-destructive/30' : ''}`}
               >
                 <div className="flex items-center gap-4">
-                  {r.composite === best && <Trophy className="w-5 h-5 text-warning" />}
+                  {r.composite === best && !r.fired && <Trophy className="w-5 h-5 text-warning" />}
                   <div>
                     <p className="text-foreground font-semibold">
-                      {r.composite} — <span className="text-sm">{r.rating}</span>
+                      {r.fired ? (
+                        <span className="text-destructive">Fired — 0</span>
+                      ) : (
+                        <>{r.composite} — <span className="text-sm">{r.rating}</span></>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       US: {r.us} | AR: {r.ar}
