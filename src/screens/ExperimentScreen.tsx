@@ -1,7 +1,7 @@
 import { useGame } from '@/game/GameContext';
 import { SEARCH_TYPES, Strategy, SearchType, Allocation, calculateScores, emptyStrategy } from '@/game/engine';
 import { CheckCircle2, AlertTriangle, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import CircularDial from '@/components/CircularDial';
+import TrafficSlider from '@/components/TrafficSlider';
 
 interface Props {
   isFinal?: boolean;
@@ -126,9 +126,9 @@ export default function ExperimentScreen({ isFinal }: Props) {
                   <p className="text-xs text-muted-foreground/60 mt-1 italic">{st.examples}</p>
                 </div>
                 <div className="flex-1 flex justify-center gap-8">
-                  <CircularDial label="Blue Links" value={strategy[st.key].blueLinks} onChange={v => setAlloc(st.key, 'blueLinks', v)} accentColor="hsl(var(--primary))" />
-                  <CircularDial label="AI Overview" value={strategy[st.key].aiOverview} onChange={v => setAlloc(st.key, 'aiOverview', v)} accentColor="hsl(var(--google-purple))" />
-                  <CircularDial label="AI Mode" value={strategy[st.key].aiMode} onChange={v => setAlloc(st.key, 'aiMode', v)} accentColor="hsl(var(--google-green))" />
+                  <TrafficSlider label="Blue Links" value={strategy[st.key].blueLinks} onChange={v => setAlloc(st.key, 'blueLinks', v)} accentColor="hsl(var(--primary))" />
+                  <TrafficSlider label="AI Overview" value={strategy[st.key].aiOverview} onChange={v => setAlloc(st.key, 'aiOverview', v)} accentColor="hsl(var(--google-purple))" />
+                  <TrafficSlider label="AI Mode" value={strategy[st.key].aiMode} onChange={v => setAlloc(st.key, 'aiMode', v)} accentColor="hsl(var(--google-green))" />
                 </div>
                 <div className="w-24 flex-shrink-0 flex items-center gap-2 justify-end">
                   {valid ? (
