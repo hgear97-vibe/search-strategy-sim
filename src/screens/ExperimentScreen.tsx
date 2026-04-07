@@ -1,7 +1,7 @@
 import { useGame } from '@/game/GameContext';
 import { SEARCH_TYPES, Strategy, SearchType, Allocation, calculateScores, emptyStrategy } from '@/game/engine';
 import { CheckCircle2, AlertTriangle, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import CircularDial from '@/components/CircularDial';
+import TrafficSlider from '@/components/TrafficSlider';
 
 interface Props {
   isFinal?: boolean;
