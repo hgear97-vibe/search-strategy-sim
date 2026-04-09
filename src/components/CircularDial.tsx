@@ -1,81 +1,43 @@
 import { useState, useRef, useCallback } from 'react';
 
-const RADIUS = 38;
-const CENTER = 50;
-const KNOB_RADIUS = 8;
+const SNAP_VALUES = [0, 33, 67, 100];
+const TRACK_WIDTH = 120;
+const TRACK_PADDING = 12;
+const USABLE_WIDTH = TRACK_WIDTH - TRACK_PADDING * 2;
 
-// 4 points with snapping thresholds around 33 and 67
-// 0 at top (-90°), 33 at right (0°), 67 at bottom (90°), 100 at left (180°)
-const VALUE_ANGLES = [
-  { value: 0, angle: -90 },
-  { value: 33, angle: 0 },
-  { value: 67, angle: 90 },
-  { value: 100, angle: 180 },
-];
-
-function getXY(angleDeg: number) {
-  const rad = (angleDeg * Math.PI) / 180;
-  return { x: CENTER + RADIUS * Math.cos(rad), y: CENTER + RADIUS * Math.sin(rad) };
+function getXForValue(value: number): number {
+  const idx = SNAP_VALUES.indexOf(value);
+  if (idx >= 0) return TRACK_PADDING + (idx / (SNAP_VALUES.length - 1)) * USABLE_WIDTH;
+  return TRACK_PADDING + (value / 100) * USABLE_WIDTH;
 }
 
-function angleFromMouse(cx: number, cy: number, mx: number, my: number): number {
-  return Math.atan2(my - cy, mx - cx) * (180 / Math.PI);
+function snapToNearest(x: number): number {
+  const pct = Math.max(0, Math.min(1, (x - TRACK_PADDING) / USABLE_WIDTH));
+  const idx = Math.round(pct * (SNAP_VALUES.length - 1));
+  return SNAP_VALUES[Math.max(0, Math.min(SNAP_VALUES.length - 1, idx))];
 }
 
-function valueFromAngle(angleDeg: number): number {
-  // Convert to clockwise progress from top in [0, 270]
-  // -90 => 0, 0 => 90, 90 => 180, 180 => 270
-  let progress = angleDeg + 90;
-  if (progress < 0) progress += 360;
-  if (progress > 270) progress = 270;
-
-  // Raw percentage on the dial's active 270° arc
-  const pct = (progress / 270) * 100;
-
-  // Threshold behavior requested:
-  // below 33 => 0, 33..67 => snap to 33 or 67 midpoint split, above 67 => 100
-  if (pct < 33) return 0;
-  if (pct > 67) return 100;
-  return pct < 50 ? 33 : 67;
-}
-
-function angleForValue(value: number): number {
-  const entry = VALUE_ANGLES.find(v => v.value === value);
-  return entry ? entry.angle : -90;
-}
-
-interface CircularDialProps {
+interface LinearSliderProps {
   label: string;
   value: number;
   onChange: (v: number) => void;
   accentColor?: string;
 }
 
-export default function CircularDial({ label, value, onChange, accentColor = 'hsl(var(--primary))' }: CircularDialProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
+export default function CircularDial({ label, value, onChange, accentColor = 'hsl(var(--primary))' }: LinearSliderProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
-  const knobAngle = angleForValue(value);
-  const knobPos = getXY(knobAngle);
 
-  const getArcPath = () => {
-    if (value <= 0) return '';
-    const startAngle = -90;
-    const endAngle = angleForValue(value);
-    const sweep = endAngle - startAngle;
-    const largeArc = sweep > 180 ? 1 : 0;
-    const start = getXY(startAngle);
-    const end = getXY(endAngle);
-    return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 ${largeArc} 1 ${end.x} ${end.y}`;
-  };
+  const getValueFromPointer = useCallback((clientX: number) => {
+    if (!trackRef.current) return value;
+    const rect = trackRef.current.getBoundingClientRect();
+    const relX = ((clientX - rect.left) / rect.width) * TRACK_WIDTH;
+    return snapToNearest(relX);
+  }, [value]);
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
-    if (!svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const angle = angleFromMouse(cx, cy, e.clientX, e.clientY);
-    onChange(valueFromAngle(angle));
-  }, [onChange]);
+    onChange(getValueFromPointer(e.clientX));
+  }, [onChange, getValueFromPointer]);
 
   const handlePointerUp = useCallback(() => {
     setDragging(false);
@@ -86,67 +48,96 @@ export default function CircularDial({ label, value, onChange, accentColor = 'hs
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     setDragging(true);
+    onChange(getValueFromPointer(e.clientX));
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
-    if (!svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const angle = angleFromMouse(cx, cy, e.clientX, e.clientY);
-    onChange(valueFromAngle(angle));
-  }, [handlePointerMove, handlePointerUp, onChange]);
+  }, [handlePointerMove, handlePointerUp, onChange, getValueFromPointer]);
+
+  const thumbX = getXForValue(value);
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <div className="relative w-[110px] h-[110px] select-none cursor-pointer" onPointerDown={handlePointerDown as any}>
-        <svg ref={svgRef} viewBox="0 0 100 100" className="w-full h-full" style={{ touchAction: 'none' }}>
-          <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke="hsl(var(--muted))" strokeWidth="2.5" />
+      <div
+        ref={trackRef}
+        className="relative select-none cursor-pointer"
+        style={{ width: TRACK_WIDTH, height: 40, touchAction: 'none' }}
+        onPointerDown={handlePointerDown}
+      >
+        {/* Track background line */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            left: TRACK_PADDING,
+            right: TRACK_PADDING,
+            height: 3,
+            backgroundColor: 'hsl(var(--muted))',
+          }}
+        />
 
-          {value > 0 && (
-            <path d={getArcPath()} fill="none" stroke={accentColor} strokeWidth="3.5" strokeLinecap="round" />
-          )}
-
-          {VALUE_ANGLES.map((va, i) => {
-            const pos = getXY(va.angle);
-            const isActive = va.value <= value;
-            return (
-              <g key={i}>
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={2.5}
-                  fill={isActive ? accentColor : 'hsl(var(--muted-foreground) / 0.3)'}
-                />
-                <text
-                  x={pos.x + Math.cos((va.angle * Math.PI) / 180) * 12}
-                  y={pos.y + Math.sin((va.angle * Math.PI) / 180) * 12 + 1}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="fill-muted-foreground/50 text-[7px] pointer-events-none"
-                >
-                  {va.value}
-                </text>
-              </g>
-            );
-          })}
-
-          <circle
-            cx={knobPos.x}
-            cy={knobPos.y}
-            r={KNOB_RADIUS}
-            fill={accentColor}
-            stroke="hsl(var(--background))"
-            strokeWidth="2"
-            className={`cursor-grab ${dragging ? 'cursor-grabbing' : ''}`}
-            style={{ filter: dragging ? `drop-shadow(0 0 6px ${accentColor})` : 'none' }}
+        {/* Active fill line */}
+        {value > 0 && (
+          <div
+            className="absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-100"
+            style={{
+              left: TRACK_PADDING,
+              width: thumbX - TRACK_PADDING,
+              height: 3,
+              backgroundColor: accentColor,
+            }}
           />
+        )}
 
-          <text x={CENTER} y={CENTER + 1} textAnchor="middle" dominantBaseline="middle" className="fill-foreground font-bold text-[16px] pointer-events-none">
-            {value}%
-          </text>
-        </svg>
+        {/* Snap-point dots */}
+        {SNAP_VALUES.map((sv, i) => {
+          const dotX = getXForValue(sv);
+          const isActive = sv <= value;
+          return (
+            <div
+              key={i}
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full transition-colors duration-100"
+              style={{
+                left: dotX,
+                width: 8,
+                height: 8,
+                backgroundColor: isActive ? accentColor : 'hsl(var(--muted-foreground) / 0.3)',
+              }}
+            />
+          );
+        })}
+
+        {/* Thumb / knob */}
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 transition-all duration-100 ${dragging ? 'scale-110' : ''}`}
+          style={{
+            left: thumbX,
+            width: 18,
+            height: 18,
+            backgroundColor: accentColor,
+            borderColor: 'hsl(var(--background))',
+            boxShadow: dragging ? `0 0 8px ${accentColor}` : '0 1px 3px rgba(0,0,0,0.2)',
+          }}
+        />
+
+        {/* Value labels below dots */}
+        {SNAP_VALUES.map((sv, i) => {
+          const dotX = getXForValue(sv);
+          return (
+            <span
+              key={`label-${i}`}
+              className="absolute text-[9px] text-muted-foreground/50 pointer-events-none"
+              style={{
+                left: dotX,
+                top: 32,
+                transform: 'translateX(-50%)',
+              }}
+            >
+              {sv}
+            </span>
+          );
+        })}
       </div>
+      <span className="text-sm font-bold" style={{ color: accentColor }}>{value}%</span>
     </div>
   );
 }

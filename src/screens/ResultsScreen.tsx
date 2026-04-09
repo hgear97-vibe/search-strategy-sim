@@ -3,7 +3,42 @@ import { useGame } from '@/game/GameContext';
 import { getHeadlines, SEARCH_TYPES } from '@/game/engine';
 import { TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
 import ScoreGauge from '@/components/ScoreGauge';
-import H1 from '@/assets/headlines/H1.png';
+// Import all headline image files
+import imgH1 from '@/assets/headlines/H1.png';   // WSJ: Ad revenue plunges, AI cannibalizing queries
+import imgH2 from '@/assets/headlines/H2.png';   // Alphabet stock plunges 8%
+import imgH3 from '@/assets/headlines/H3.png';   // CFO warns: ad model unprecedented pressure
+import imgH4 from '@/assets/headlines/H4.png';   // CFO confirms: advertiser flight, CTR collapse
+import imgH5 from '@/assets/headlines/H5.png';   // Perplexity AI user growth explodes
+import imgH6 from '@/assets/headlines/H6.png';   // Gen Z abandons Google for ChatGPT/Claude
+import imgH7 from '@/assets/headlines/H7.png';   // Google search stuck in 2015, Reddit thread
+import imgH8 from '@/assets/headlines/H8.png';   // Google strikes balance, AI-enhanced search
+import imgH9 from '@/assets/headlines/H9.png';   // Analysts praise Google, stock all-time high
+import imgH10 from '@/assets/headlines/H10.png'; // AI overview wins users, advertisers happy
+import imgH11 from '@/assets/headlines/H11.png'; // OpenAI launches ChatGPT ads platform
+import imgH12 from '@/assets/headlines/H12.png'; // Perplexity ad-free model, 50M subscribers
+import imgH13 from '@/assets/headlines/H13.png'; // Google retains search dominance
+import imgH14 from '@/assets/headlines/H14.png'; // SEO industry crisis, organic traffic -40%
+import imgH15 from '@/assets/headlines/H15.png'; // Local businesses report drop in foot traffic
+
+// Map headline IDs → correct image based on content match
+const HEADLINE_IMAGES: Record<string, string> = {
+  H1:  imgH1,   // "Google Ad Revenue Plunges..." (WSJ) → ad revenue plunges image
+  H2:  imgH2,   // "Alphabet Stock Drops 12%..." (Bloomberg) → stock plunges image
+  H3:  imgH4,   // "Advertisers Flee Google..." (AdAge) → advertiser flight image
+  H4:  imgH7,   // "Google Search Users Revolt..." (The Verge) → Reddit stuck in 2015
+  H5:  imgH6,   // "User Satisfaction All-Time Low..." (TechCrunch) → Gen Z abandons Google
+  H6:  imgH5,   // "Perplexity CEO: Handing Us Market..." (CNBC) → Perplexity growth explodes
+  H7:  imgH11,  // "ChatGPT Search Surges 40%..." (Reuters) → OpenAI ChatGPT ads platform
+  H8:  imgH3,   // "Google Walks AI Tightrope..." (NYT) → CFO warns, ad model pressure
+  H9:  imgH14,  // "Analysts Warn: Years to Monetize..." (FT) → SEO crisis, traffic drops
+  H10: imgH8,   // "Bold AI Bet Pays Off..." (TechCrunch) → Google strikes balance
+  H11: imgH9,   // "Wall Street Applauds..." (WSJ) → analysts praise, stock all-time high
+  H12: imgH10,  // "AI and Ads Can Coexist..." (Bloomberg) → AI overview wins + advertisers happy
+  H13: imgH9,   // "Pichai's Masterclass..." (Forbes) → analysts praise, stock high
+  H14: imgH10,  // "AI Overview Wins Users..." (Wired) → AI overview wins users
+  H15: imgH13,  // "Google Maintains Dominance..." (The Information) → Google retains dominance
+  H16: imgH13,  // "OpenAI Struggles to Compete..." (Ars Technica) → competitors struggle
+};
 
 export default function ResultsScreen() {
   const { state, dispatch } = useGame();
@@ -128,7 +163,7 @@ export default function ResultsScreen() {
                     <p className="text-foreground text-sm">{h.headline}</p>
                   </div>
                   <img
-                    src={H1}
+                    src={HEADLINE_IMAGES[h.id] || H1}
                     alt={h.headline}
                     loading="lazy"
                     className="w-full h-44 rounded-md border border-border object-cover"
