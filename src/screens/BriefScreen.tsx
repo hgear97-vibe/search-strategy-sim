@@ -30,6 +30,10 @@ export default function BriefScreen() {
             You're Google's acting CEO for a day. AI competitors are threatening Search — the engine behind 77% of Alphabet's revenue.
             The board needs you to run <span className="font-bold text-primary">3 experiments</span>, then lock in a steady-state strategy that balances user satisfaction with ad revenue. Choose wisely — the board is watching.
           </p>
+          <div className="mt-6 pt-6 border-t border-primary/20">
+            <p className="text-xs text-muted-foreground">Technology Strategy: Innovator's Dilemma</p>
+            <p className="text-xs text-muted-foreground mt-1">By Harshith Gear, Columbia Business School</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
