@@ -28,8 +28,8 @@ export default function LoginScreen() {
           Step into Sundar's shoes. Save Google Search.
         </p>
         <div className="mt-4 space-y-1">
-          <p className="text-muted-foreground text-sm font-medium">Technology Strategy: Innovator's Dilemma</p>
-          <p className="text-muted-foreground text-sm">Columbia Business School</p>
+          <p className="text-foreground/70 text-sm font-medium">Technology Strategy: Innovator's Dilemma</p>
+          <p className="text-foreground/70 text-sm">By Harshith Gear, Columbia Business School</p>
         </div>
 
         {error && (
